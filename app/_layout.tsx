@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "../src/context/AuthContext";
 import { ModalProvider } from "../src/context/ModalContext";
 import { GlobalModal } from "../src/components/modals/GlobalModal";
+import { theme } from "@/src/constants/theme";
 
 export default function RootLayout() {
   return (
@@ -41,7 +42,9 @@ export default function RootLayout() {
                 headerShown: true, // Native Header ON
                 title: "Replies",
                 headerShadowVisible: true,
-                headerStyle: { backgroundColor: "#F2F2F7" },
+                headerStyle: {
+                  backgroundColor: theme.colors.backgroundGrouped,
+                },
               }}
             />
           </Stack>

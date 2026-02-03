@@ -92,7 +92,11 @@ const PostItemComponent = ({
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.avatarContainer}>
-            <Ionicons name="person" size={16} color="#64748B" />
+            <Ionicons
+              name="person"
+              size={16}
+              color={theme.colors.textSecondary}
+            />
           </View>
           <View>
             <Text style={styles.userId}>
@@ -197,14 +201,16 @@ const PostItemComponent = ({
             <Ionicons
               name="checkmark"
               size={14}
-              color={activeStance === "agreed" ? "white" : "#94A3B8"}
+              color={
+                activeStance === "agreed" ? "white" : theme.colors.textTertiary
+              }
             />
             <Text
               style={[
                 styles.voteText,
                 activeStance === "agreed"
                   ? { color: "white" }
-                  : { color: "#64748B" },
+                  : { color: theme.colors.textSecondary },
               ]}
             >
               {formatCompactNumber(localMetrics.agreedCount)}
@@ -221,14 +227,18 @@ const PostItemComponent = ({
             <Ionicons
               name="close"
               size={14}
-              color={activeStance === "dissented" ? "white" : "#94A3B8"}
+              color={
+                activeStance === "dissented"
+                  ? "white"
+                  : theme.colors.textTertiary
+              }
             />
             <Text
               style={[
                 styles.voteText,
                 activeStance === "dissented"
                   ? { color: "white" }
-                  : { color: "#64748B" },
+                  : { color: theme.colors.textSecondary },
               ]}
             >
               {formatCompactNumber(localMetrics.dissentedCount)}
@@ -247,7 +257,9 @@ const PostItemComponent = ({
           <Ionicons
             name={disableClick ? "chatbox" : "chatbox-outline"}
             size={16}
-            color={disableClick ? theme.colors.logoBlue : "#94A3B8"}
+            color={
+              disableClick ? theme.colors.logoBlue : theme.colors.textTertiary
+            }
           />
           <Text
             style={[
@@ -272,8 +284,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
-    shadowColor: "#000",
+    borderColor: theme.colors.border,
+    shadowColor: theme.shadows.md?.shadowColor,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -282,7 +294,7 @@ const styles = StyleSheet.create({
   replyCard: {
     marginLeft: 16,
     borderLeftWidth: 4,
-    borderLeftColor: "#E2E8F0",
+    borderLeftColor: theme.colors.border,
   },
   header: {
     flexDirection: "row",
@@ -297,15 +309,15 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 36,
     height: 36,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: theme.colors.slate100,
     borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: theme.colors.border,
   },
   userId: {
-    color: "#0F172A",
+    color: theme.colors.slate900,
     fontWeight: "600",
     fontSize: 14,
     lineHeight: 18,
@@ -315,18 +327,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   timestamp: {
-    color: "#94A3B8",
+    color: theme.colors.textTertiary,
     fontSize: 12,
     fontWeight: "500",
   },
   dotSeparator: {
     marginHorizontal: 4,
-    color: "#94A3B8",
+    color: theme.colors.textTertiary,
     fontSize: 12,
   },
   content: {
     fontSize: 15,
-    color: "#1E293B",
+    color: theme.colors.slate800,
     lineHeight: 22,
     marginBottom: 16,
   },
@@ -344,8 +356,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     minHeight: 80,
     textAlignVertical: "top",
-    color: "#1E293B",
-    backgroundColor: "#F8FAFC",
+    color: theme.colors.slate800,
+    backgroundColor: theme.colors.slate50,
   },
   charCount: {
     position: "absolute",
@@ -355,7 +367,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   textRed: { color: theme.colors.danger },
-  textGray: { color: "#CBD5E1" },
+  textGray: { color: theme.colors.slate300 },
   editButtons: {
     flexDirection: "row",
     gap: 8,
@@ -373,7 +385,7 @@ const styles = StyleSheet.create({
     minWidth: 70,
   },
   cancelBtn: {
-    backgroundColor: "#F1F5F9",
+    backgroundColor: theme.colors.borderSubtle,
   },
   saveBtnText: {
     color: "white",
@@ -381,7 +393,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   cancelBtnText: {
-    color: "#64748B",
+    color: theme.colors.textSecondary,
     fontWeight: "600",
     fontSize: 13,
   },
@@ -391,15 +403,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: "#F1F5F9",
+    borderTopColor: theme.colors.borderSubtle,
   },
   voteCapsule: {
     flexDirection: "row",
-    backgroundColor: "#F8FAFC",
+    backgroundColor: theme.colors.slate50,
     borderRadius: 999,
     padding: 2,
     borderWidth: 1,
-    borderColor: "#F1F5F9",
+    borderColor: theme.colors.borderSubtle,
     gap: 2,
   },
   voteBtn: {
@@ -429,6 +441,6 @@ const styles = StyleSheet.create({
   replyText: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#94A3B8",
+    color: theme.colors.textTertiary,
   },
 });

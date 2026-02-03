@@ -125,7 +125,7 @@ export default function RepliesPopup() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F2F2F7", // iOS Grouped Background
+    backgroundColor: theme.colors.backgroundGrouped,
   },
   center: {
     flex: 1,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 16,
-    backgroundColor: "#F2F2F7",
+    backgroundColor: theme.colors.backgroundGrouped,
     borderBottomWidth: 1,
     borderBottomColor: "#E5E5EA",
   },
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   separatorText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8E8E93",
+    color: theme.colors.iosGray,
     letterSpacing: 1,
     marginRight: 12,
   },
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   emptyText: {
-    color: "#8E8E93",
+    color: theme.colors.iosGray,
     fontStyle: "italic",
   },
   // Input Styles
@@ -201,13 +201,13 @@ const styles = StyleSheet.create({
   inputPlaceholder: {
     flex: 1,
     height: 40,
-    backgroundColor: "#F2F2F7",
+    backgroundColor: theme.colors.backgroundGrouped,
     borderRadius: 20,
     justifyContent: "center",
     paddingHorizontal: 16,
   },
   inputText: {
-    color: "#8E8E93",
+    color: theme.colors.iosGray,
   },
   sendButton: {
     width: 36,

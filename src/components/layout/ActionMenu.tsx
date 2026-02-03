@@ -13,6 +13,7 @@ import { Post } from "@/src/types";
 // Hooks
 import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
+import { theme } from "@/src/constants/theme";
 
 interface ActionMenuProps {
   post: Post;
@@ -115,7 +116,11 @@ export const ActionMenu = ({
       ]}
       hitSlop={10}
     >
-      <Ionicons name="ellipsis-horizontal" size={18} color="#94A3B8" />
+      <Ionicons
+        name="ellipsis-horizontal"
+        size={18}
+        color={theme.colors.textTertiary}
+      />
     </Pressable>
   );
 };
@@ -129,6 +134,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   triggerPressed: {
-    backgroundColor: "#F1F5F9",
+    backgroundColor: theme.colors.borderSubtle,
   },
 });

@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Button } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/context/AuthContext";
 import { router } from "expo-router";
+import { theme } from "../../src/constants/theme";
 
 export default function ProfileTab() {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export default function ProfileTab() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8F2E8" },
+  container: { flex: 1, backgroundColor: theme.colors.background },
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
 });

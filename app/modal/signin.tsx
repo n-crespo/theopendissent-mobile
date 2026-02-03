@@ -2,11 +2,12 @@ import { View, Text, StyleSheet, Pressable } from "react-native";
 import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
+import { theme } from "@/src/constants/theme";
 
 // Standard iOS System Colors
 const IOS_BLUE = "#007AFF";
-const IOS_GRAY = "#8E8E93";
-const IOS_BG = "#F2F2F7"; // System Grouped Background
+const IOS_GRAY = theme.colors.iosGray;
+const IOS_BG = theme.colors.backgroundGrouped; // System Grouped Background
 
 export default function SignInModal() {
   // Mock function for now

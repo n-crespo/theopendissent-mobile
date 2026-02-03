@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { PostItem } from "./PostItem";
 import { Post } from "../../types";
+import { theme } from "@/src/constants/theme";
 
 interface PostListViewProps {
   posts: Post[];
@@ -61,7 +62,7 @@ export const PostListView = ({
     if (loading) {
       return (
         <View style={styles.footer}>
-          <ActivityIndicator size="small" color="#94a3b8" />
+          <ActivityIndicator size="small" color={theme.colors.textTertiary} />
           <Text style={styles.loadingText}>Loading older posts...</Text>
         </View>
       );
@@ -103,14 +104,14 @@ const styles = StyleSheet.create({
   pinnedLabel: {
     fontSize: 12,
     fontWeight: "bold",
-    color: "#64748b",
+    color: theme.colors.textSecondary,
     marginBottom: 8,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   divider: {
     height: 1,
-    backgroundColor: "#e2e8f0",
+    backgroundColor: theme.colors.border,
     marginVertical: 12,
   },
   footer: {
@@ -120,12 +121,12 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: "#94a3b8",
+    color: theme.colors.textTertiary,
     fontStyle: "italic",
   },
   loadingText: {
     fontSize: 12,
-    color: "#94a3b8",
+    color: theme.colors.textTertiary,
   },
   logoContainer: {
     alignItems: "center",

@@ -2,6 +2,7 @@ import { StyleSheet, View } from "react-native";
 // import { SafeAreaView } from "react-native-safe-area-context";
 import { FeedSortProvider } from "../../src/context/FeedSortContext";
 import { PostList } from "../../src/components/feed/PostList";
+import { theme } from "../../src/constants/theme";
 
 export default function FeedTab() {
   return (
@@ -17,6 +18,6 @@ export default function FeedTab() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8F2E8",
+    backgroundColor: theme.colors.background,
   },
 });

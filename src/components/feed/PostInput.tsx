@@ -103,7 +103,11 @@ export const PostInput = ({
             value={content}
             onChangeText={setContent}
             placeholder={getPlaceholder()}
-            placeholderTextColor={hasNoStance ? "#94A3B8" : "#64748B"}
+            placeholderTextColor={
+              hasNoStance
+                ? theme.colors.textTertiary
+                : theme.colors.textSecondary
+            }
             editable={!hasNoStance && !isPosting}
             maxLength={MAX_CHARS}
             // Auto-grow logic
@@ -180,19 +184,19 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: "white",
     borderWidth: 1,
-    borderColor: "#E2E8F0",
+    borderColor: theme.colors.border,
     borderRadius: 16,
     paddingHorizontal: 12,
     paddingTop: 12,
     paddingBottom: 12,
     fontSize: 15,
-    color: "#0F172A",
+    color: theme.colors.slate900,
     textAlignVertical: "top", // Essential for Android multiline
   },
   disabledInput: {
-    backgroundColor: "#F1F5F9",
-    borderColor: "#CBD5E1",
-    color: "#94A3B8",
+    backgroundColor: theme.colors.borderSubtle,
+    borderColor: theme.colors.slate300,
+    color: theme.colors.textTertiary,
     fontStyle: "italic",
   },
   charCount: {
@@ -203,7 +207,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   charCountGray: {
-    color: "#CBD5E1",
+    color: theme.colors.slate300,
   },
   charCountRed: {
     color: theme.colors.danger,
@@ -215,13 +219,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: theme.shadows.md?.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   disabledButton: {
-    backgroundColor: "#CBD5E1",
+    backgroundColor: theme.colors.slate300,
     shadowOpacity: 0,
   },
   pressedButton: {

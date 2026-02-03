@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border, // #E2E8F0
+    borderColor: theme.colors.border,
     marginBottom: 8,
     // Shadow for iOS/Android
     shadowColor: "#000",
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   },
   highlightedContainer: {
     borderColor: theme.colors.logoBlue,
-    backgroundColor: "#F8FAFC", // Very subtle blue tint
+    backgroundColor: theme.colors.slate50,
   },
   header: {
     flexDirection: "row",
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 14,
     fontWeight: "700", // 'font-semibold'
-    color: "#0F172A", // Slate-900
+    color: theme.colors.slate900,
     marginBottom: 2,
   },
   metaRow: {
@@ -126,16 +126,16 @@ const styles = StyleSheet.create({
   },
   dotSeparator: {
     marginHorizontal: 4,
-    color: "#94A3B8", // Slate-400
+    color: theme.colors.slate400,
     fontSize: 12,
   },
   timestamp: {
-    color: "#94A3B8",
+    color: theme.colors.textTertiary,
     fontSize: 12,
     fontWeight: "500",
   },
   editedText: {
-    color: "#94A3B8",
+    color: theme.colors.textTertiary,
     fontSize: 12,
     fontStyle: "italic",
   },
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: 14,
-    color: "#1E293B", // Slate-800
+    color: theme.colors.slate800,
     lineHeight: 20,
   },
 });
