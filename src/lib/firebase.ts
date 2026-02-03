@@ -21,18 +21,20 @@ import {
   signOut,
   User,
   GoogleAuthProvider,
-  getAuth,
+  // getAuth,
   connectAuthEmulator,
+  initializeAuth,
 } from "firebase/auth";
+import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
-  apiKey: process.env.EXPO_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.EXPO_FIREBASE_DB_URL,
-  projectId: process.env.EXPO_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_FIREBASE_APP_ID,
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
 };
 
 export interface UserCounts {
@@ -43,8 +45,14 @@ export interface UserCounts {
 }
 
 const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getDatabase(app);
+// const auth = getAuth(app);
+const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
+});
+// export const db = getDatabase(app);
+const db = getDatabase(app);
+
+export { auth, db };
 
 if (process.env.DEV) {
   connectAuthEmulator(auth, "http://127.0.0.1:9099");
@@ -342,6 +350,7 @@ export const subscribeToAuth = (callback: (user: User | null) => void) => {
  */
 export const signInWithGoogle = async () => {
   try {
+    // TODO: change this so it works on mobile
     await signInWithPopup(auth, googleProvider);
   } catch (error: any) {
     // sign user out locally to clear partially authenticated state
@@ -549,3 +558,11 @@ export const subscribeToUserCounts = (
     interactionsUnsub();
   };
 };
+function getReactNativePersistence(
+  ReactNativeAsyncStorage: any,
+):
+  | import("@firebase/auth").Persistence
+  | import("@firebase/auth").Persistence[]
+  | undefined {
+  throw new Error("Function not implemented.");
+}
