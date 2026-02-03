@@ -78,7 +78,7 @@ export const theme = {
     // Floating button / Modal shadow
     md: Platform.select({
       ios: {
-        shadowColor: "#000",
+        shadowColor: theme.shadows.md?.shadowColor,
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 12,

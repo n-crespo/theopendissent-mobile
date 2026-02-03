@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: theme.shadows.md?.shadowColor,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "800",
-    color: "#000",
+    color: theme.shadows.md?.shadowColor,
     marginBottom: 8,
     textAlign: "center",
   },
@@ -143,12 +143,12 @@ const styles = StyleSheet.create({
   },
   warningText: {
     fontSize: 15,
-    color: "#000",
+    color: theme.shadows.md?.shadowColor,
     flex: 1,
     lineHeight: 20,
   },
   primaryButton: {
-    backgroundColor: "#000", // Apple Sign In often uses Black or Blue
+    backgroundColor: theme.shadows.md?.shadowColor,
     width: "100%",
     paddingVertical: 16,
     borderRadius: 14,

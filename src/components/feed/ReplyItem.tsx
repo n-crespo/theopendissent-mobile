@@ -24,7 +24,7 @@ export const ReplyItem = ({
 
   // Dynamic Styles based on Stance
   const stanceColor = isAgree ? theme.colors.success : theme.colors.danger;
-  const stanceBg = isAgree ? "#DCFCE7" : "#FEE2E2"; // Light Green vs Light Red
+  const stanceBg = isAgree ? theme.colors.successBg : "#FEE2E2"; // Light Green vs Light Red
   const stanceIcon = isAgree ? "checkbox" : "close-circle"; // Ionicons names
   const stanceLabel = isAgree ? "Agreed" : "Dissented";
 
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     marginBottom: 8,
     // Shadow for iOS/Android
-    shadowColor: "#000",
+    shadowColor: theme.shadows.md?.shadowColor,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
