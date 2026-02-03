@@ -1,143 +1,248 @@
-import { StyleSheet, Text, View, Pressable } from "react-native";
+import React, { memo } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Pressable,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Post } from "@/src/types";
 import { timeAgo, formatCompactNumber } from "@/src/utils";
 import { theme } from "@/src/constants/theme";
-import { useAuth } from "@/src/context/AuthContext";
+// Removed unused useAuth import
+import { usePostActions } from "@/src/hooks/usePostActions";
+import { ActionMenu } from "../layout/ActionMenu";
 
 interface PostItemProps {
   post: Post;
-  onStanceChange?: (stance: "agreed" | "dissented") => void;
+  disableClick?: boolean;
+  onStanceChange?: (stance: "agreed" | "dissented" | null) => void;
 }
 
-export const PostItem = ({ post, onStanceChange }: PostItemProps) => {
+// 1. Define component as a named function first (Fixes display-name error)
+const PostItemComponent = ({
+  post,
+  disableClick,
+  onStanceChange,
+}: PostItemProps) => {
   const router = useRouter();
-  const { user } = useAuth();
 
-  if (!post) return null;
+  // 2. Removed unused 'user' from useAuth.
+  // We use 'uid' from the hook instead.
+  const {
+    uid,
+    localMetrics,
+    isEditing,
+    setIsEditing,
+    editContent,
+    setEditContent,
+    isSaving,
+    interactionState,
+    handleInteraction,
+    handleEditSave,
+    handleCancel,
+    handleDeleteTrigger,
+  } = usePostActions(post);
 
-  // --- INTERACTION HANDLER ---
-  const handleInteraction = (action: () => void) => {
-    if (!user) {
-      router.push("/profile");
-      return;
+  const isOwner = uid === post.userId;
+  const MAX_CHARS = 600;
+  const charsLeft = MAX_CHARS - editContent.length;
+  const isNearLimit = charsLeft < 50;
+
+  const activeStance = interactionState.dissented
+    ? "dissented"
+    : interactionState.agreed
+      ? "agreed"
+      : null;
+
+  const onVote = (type: "agreed" | "dissented") => {
+    if (onStanceChange) {
+      const nextStance = activeStance === type ? null : type;
+      onStanceChange(nextStance);
     }
-    action();
+    handleInteraction(type);
   };
 
-  const onVote = (type: "agree" | "disagree") => {
-    handleInteraction(() => {
-      // Placeholder for your actual voting logic
-      console.log(`User voted: ${type}`);
+  const onOpenReplies = () => {
+    if (disableClick || isEditing) return;
 
-      // 2. Call the callback if it exists (Unlocks the input box)
-      if (onStanceChange) {
-        onStanceChange(type === "agree" ? "agreed" : "dissented");
-      }
+    router.push({
+      pathname: "/replies/[id]",
+      params: { id: post.id },
     });
   };
 
-  const onOpenDiscussion = () => {
-    router.push(`/replies/${post.id}`);
-  };
+  const formattedTime =
+    typeof post.timestamp === "number" ? timeAgo(new Date(post.timestamp)) : "";
 
-  // Safe checks for counts
-  const agreedCount = post.userInteractions?.agreed
-    ? Object.keys(post.userInteractions.agreed).length
-    : 0;
+  const formattedEditTime = post.editedAt
+    ? timeAgo(new Date(post.editedAt))
+    : null;
 
-  const dissentedCount = post.userInteractions?.dissented
-    ? Object.keys(post.userInteractions.dissented).length
-    : 0;
+  if (!post || !post.userId) return null;
 
   return (
-    <View style={styles.card}>
-      {/* --- HEADER --- */}
+    <View style={[styles.card, post.parentPostId && styles.replyCard]}>
+      {/* HEADER */}
       <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Ionicons
-            name="person"
-            size={16}
-            color={theme.colors.textSecondary}
-          />
+        <View style={styles.headerLeft}>
+          <View style={styles.avatarContainer}>
+            <Ionicons name="person" size={16} color="#64748B" />
+          </View>
+          <View>
+            <Text style={styles.userId}>
+              {isOwner ? "You" : post.userId.substring(0, 10) + "..."}
+            </Text>
+            <View style={styles.metaRow}>
+              <Text style={styles.timestamp}>{formattedTime}</Text>
+              {formattedEditTime && (
+                <>
+                  <Text style={styles.dotSeparator}>·</Text>
+                  <Text style={styles.timestamp}>
+                    edited {formattedEditTime}
+                  </Text>
+                </>
+              )}
+            </View>
+          </View>
         </View>
 
-        <View style={styles.metaContainer}>
-          <Text style={styles.userId}>
-            {post.userId ? post.userId.substring(0, 8) + "..." : "Anonymous"}
-          </Text>
-          <View style={styles.dotSeparator} />
-          <Text style={styles.timestamp}>
-            {typeof post.timestamp === "number"
-              ? timeAgo(new Date(post.timestamp))
-              : ""}
-          </Text>
-        </View>
+        <ActionMenu
+          post={post}
+          isOwner={isOwner}
+          currentUserId={uid}
+          onEdit={() => setIsEditing(true)}
+          onDelete={handleDeleteTrigger}
+        />
       </View>
 
-      {/* --- CONTENT --- */}
-      {/* Wrapped in Pressable so tapping text opens discussion */}
-      <Pressable onPress={onOpenDiscussion}>
-        <Text style={styles.content}>{post.postContent}</Text>
-      </Pressable>
+      {/* CONTENT (VIEW vs EDIT) */}
+      {isEditing ? (
+        <View style={styles.editContainer}>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.editInput}
+              multiline
+              value={editContent}
+              onChangeText={setEditContent}
+              maxLength={MAX_CHARS}
+              autoFocus
+            />
+            <Text
+              style={[
+                styles.charCount,
+                isNearLimit ? styles.textRed : styles.textGray,
+              ]}
+            >
+              {charsLeft}
+            </Text>
+          </View>
 
-      {/* --- FOOTER (ACTIONS) --- */}
+          <View style={styles.editButtons}>
+            <Pressable
+              onPress={handleEditSave}
+              style={[
+                styles.editBtn,
+                styles.saveBtn,
+                isSaving && { opacity: 0.7 },
+              ]}
+              disabled={isSaving || editContent.trim().length === 0}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text style={styles.saveBtnText}>Save</Text>
+              )}
+            </Pressable>
+            <Pressable
+              onPress={handleCancel}
+              style={[styles.editBtn, styles.cancelBtn]}
+            >
+              <Text style={styles.cancelBtnText}>Cancel</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <Pressable onPress={onOpenReplies} disabled={disableClick}>
+          <Text style={styles.content}>{post.postContent}</Text>
+        </Pressable>
+      )}
+
+      {/* FOOTER */}
       <View style={styles.footer}>
-        {/* Vote Pills */}
-        <View style={styles.pillContainer}>
-          {/* Agreed Pill */}
+        <View style={styles.voteCapsule}>
           <Pressable
-            style={({ pressed }) => [
-              styles.pill,
-              pressed && styles.pressedPill,
+            style={[
+              styles.voteBtn,
+              activeStance === "agreed" && styles.voteBtnAgreed,
             ]}
-            onPress={() => onVote("agree")}
+            onPress={() => onVote("agreed")}
           >
-            <View style={[styles.iconCircle, styles.bgGreen]}>
-              <Ionicons
-                name="checkmark"
-                size={10}
-                color={theme.colors.surface}
-              />
-            </View>
-            <Text style={styles.pillText}>
-              {formatCompactNumber(agreedCount)}
+            <Ionicons
+              name="checkmark"
+              size={14}
+              color={activeStance === "agreed" ? "white" : "#94A3B8"}
+            />
+            <Text
+              style={[
+                styles.voteText,
+                activeStance === "agreed"
+                  ? { color: "white" }
+                  : { color: "#64748B" },
+              ]}
+            >
+              {formatCompactNumber(localMetrics.agreedCount)}
             </Text>
           </Pressable>
 
-          {/* Dissented Pill */}
           <Pressable
-            style={({ pressed }) => [
-              styles.pill,
-              pressed && styles.pressedPill,
+            style={[
+              styles.voteBtn,
+              activeStance === "dissented" && styles.voteBtnDissented,
             ]}
-            onPress={() => onVote("disagree")}
+            onPress={() => onVote("dissented")}
           >
-            <View style={[styles.iconCircle, styles.bgRed]}>
-              <Ionicons name="close" size={10} color={theme.colors.surface} />
-            </View>
-            <Text style={styles.pillText}>
-              {formatCompactNumber(dissentedCount)}
+            <Ionicons
+              name="close"
+              size={14}
+              color={activeStance === "dissented" ? "white" : "#94A3B8"}
+            />
+            <Text
+              style={[
+                styles.voteText,
+                activeStance === "dissented"
+                  ? { color: "white" }
+                  : { color: "#64748B" },
+              ]}
+            >
+              {formatCompactNumber(localMetrics.dissentedCount)}
             </Text>
           </Pressable>
         </View>
 
-        {/* Reply Button - OPENS DISCUSSION DIRECTLY */}
         <Pressable
           style={({ pressed }) => [
             styles.replyButton,
-            pressed && styles.pressedIcon,
+            pressed && { opacity: 0.6 },
           ]}
-          onPress={onOpenDiscussion}
+          onPress={onOpenReplies}
+          disabled={disableClick}
         >
           <Ionicons
-            name="chatbubble-outline"
+            name={disableClick ? "chatbox" : "chatbox-outline"}
             size={16}
-            color={theme.colors.textSecondary}
+            color={disableClick ? theme.colors.logoBlue : "#94A3B8"}
           />
-          <Text style={styles.replyText}>
-            {formatCompactNumber(post.replyCount || 0)}
+          <Text
+            style={[
+              styles.replyText,
+              disableClick && { color: theme.colors.logoBlue },
+            ]}
+          >
+            {formatCompactNumber(localMetrics.replyCount)}
           </Text>
         </Pressable>
       </View>
@@ -145,57 +250,128 @@ export const PostItem = ({ post, onStanceChange }: PostItemProps) => {
   );
 };
 
+// 3. Export the Memoized component
+export const PostItem = memo(PostItemComponent);
+
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.m,
-    marginBottom: theme.spacing.s,
-    borderRadius: theme.borderRadius.lg,
+    backgroundColor: "white",
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.default,
+    borderColor: "#E2E8F0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  replyCard: {
+    marginLeft: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: "#E2E8F0",
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     marginBottom: 12,
   },
+  headerLeft: {
+    flexDirection: "row",
+    gap: 10,
+  },
   avatarContainer: {
-    width: 32,
-    height: 32,
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.md,
+    width: 36,
+    height: 36,
+    backgroundColor: "#F1F5F9",
+    borderRadius: 6,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 10,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: "#E2E8F0",
   },
-  metaContainer: {
+  userId: {
+    color: "#0F172A",
+    fontWeight: "600",
+    fontSize: 14,
+    lineHeight: 18,
+  },
+  metaRow: {
     flexDirection: "row",
     alignItems: "center",
   },
-  userId: {
-    color: theme.colors.text,
-    fontWeight: "700",
-    fontSize: 14,
+  timestamp: {
+    color: "#94A3B8",
+    fontSize: 12,
+    fontWeight: "500",
   },
   dotSeparator: {
-    width: 3,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: theme.colors.border,
-    marginHorizontal: 6,
-  },
-  timestamp: {
-    color: theme.colors.textSecondary,
-    fontSize: 13,
+    marginHorizontal: 4,
+    color: "#94A3B8",
+    fontSize: 12,
   },
   content: {
-    fontSize: 16,
-    color: theme.colors.text,
-    lineHeight: 24,
+    fontSize: 15,
+    color: "#1E293B",
+    lineHeight: 22,
     marginBottom: 16,
+  },
+  editContainer: {
+    marginBottom: 12,
+  },
+  inputWrapper: {
+    position: "relative",
+  },
+  editInput: {
+    borderWidth: 1,
+    borderColor: theme.colors.logoBlue,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 15,
+    minHeight: 80,
+    textAlignVertical: "top",
+    color: "#1E293B",
+    backgroundColor: "#F8FAFC",
+  },
+  charCount: {
+    position: "absolute",
+    bottom: -20,
+    right: 2,
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  textRed: { color: theme.colors.danger },
+  textGray: { color: "#CBD5E1" },
+  editButtons: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 24,
+  },
+  editBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  saveBtn: {
+    backgroundColor: theme.colors.logoBlue,
+    minWidth: 70,
+  },
+  cancelBtn: {
+    backgroundColor: "#F1F5F9",
+  },
+  saveBtnText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  cancelBtnText: {
+    color: "#64748B",
+    fontWeight: "600",
+    fontSize: 13,
   },
   footer: {
     flexDirection: "row",
@@ -203,48 +379,34 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.background,
+    borderTopColor: "#F1F5F9",
   },
-  pillContainer: {
+  voteCapsule: {
     flexDirection: "row",
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.full,
-    padding: 3,
+    backgroundColor: "#F8FAFC",
+    borderRadius: 999,
+    padding: 2,
     borderWidth: 1,
-    borderColor: theme.colors.background,
+    borderColor: "#F1F5F9",
     gap: 2,
   },
-  pill: {
+  voteBtn: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: theme.borderRadius.lg,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
     gap: 6,
   },
-  pressedPill: {
-    backgroundColor: theme.colors.border,
-  },
-  pressedIcon: {
-    opacity: 0.6,
-  },
-  iconCircle: {
-    width: 16,
-    height: 16,
-    borderRadius: theme.borderRadius.md,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bgGreen: {
+  voteBtnAgreed: {
     backgroundColor: theme.colors.success,
   },
-  bgRed: {
+  voteBtnDissented: {
     backgroundColor: theme.colors.danger,
   },
-  pillText: {
+  voteText: {
     fontSize: 12,
     fontWeight: "700",
-    color: theme.colors.textSecondary,
   },
   replyButton: {
     flexDirection: "row",
@@ -255,6 +417,6 @@ const styles = StyleSheet.create({
   replyText: {
     fontSize: 13,
     fontWeight: "700",
-    color: theme.colors.textSecondary,
+    color: "#94A3B8",
   },
 });

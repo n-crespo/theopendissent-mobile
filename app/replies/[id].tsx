@@ -16,8 +16,9 @@ import { PostItem } from "../../src/components/feed/PostItem";
 import { Post } from "../../src/types";
 // Import the real data functions
 import { subscribeToPost, subscribeToReplies } from "../../src/lib/firebase";
+import { ReplyItem } from "@/src/components/feed/ReplyItem";
 
-export default function DiscussionPage() {
+export default function RepliesPopup() {
   const { id } = useLocalSearchParams();
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Post[]>([]);
@@ -96,18 +97,13 @@ export default function DiscussionPage() {
           {/* 3. Replies List */}
           <View style={styles.repliesContainer}>
             {replies.map((reply) => (
-              <View key={reply.id} style={styles.replyWrapper}>
-                {/* Re-using PostItem for replies */}
-                <PostItem post={reply} />
+              <View key={reply.id}>
+                {/* USE THE NEW COMPONENT */}
+                <ReplyItem reply={reply} />
               </View>
             ))}
-
             {replies.length === 0 && (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>
-                  No replies yet. Be the first!
-                </Text>
-              </View>
+              <Text style={styles.emptyText}>No replies yet.</Text>
             )}
           </View>
         </ScrollView>

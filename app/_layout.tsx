@@ -31,7 +31,7 @@ export default function RootLayout() {
               }}
             />
 
-            {/* 3. Discussion Sheet - SIMPLIFIED */}
+            {/* replies */}
             <Stack.Screen
               name="replies/[id]"
               options={{
