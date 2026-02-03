@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border,
     marginBottom: 8,
     // Shadow for iOS/Android
-    shadowColor: theme.shadows.md?.shadowColor,
+    shadowColor: theme.colors.shadowColor,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,

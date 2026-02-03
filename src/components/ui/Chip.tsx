@@ -67,14 +67,14 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.slate100,
     borderColor: theme.colors.slate800,
     // Shadow
-    shadowColor: theme.shadows.md?.shadowColor,
+    shadowColor: theme.colors.shadowColor,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
   },
   containerInactive: {
-    backgroundColor: theme.shadows.md?.shadowColor,
+    backgroundColor: theme.colors.shadowColor,
     borderColor: theme.colors.slate200,
   },
   pressed: {

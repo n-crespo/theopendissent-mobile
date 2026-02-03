@@ -21,6 +21,7 @@ export const theme = {
     border: "#E2E8F0", // Slate-200 (Card Borders)
     borderSubtle: "#F1F5F9", // Slate-100 (Dividers)
     iosGray: "#8E8E93",
+    shadowColor: "#000000",
 
     // --- Tailwind Slate Scale (Frequently used in your UI) ---
     slate50: "#F8FAFC",
@@ -78,7 +79,7 @@ export const theme = {
     // Floating button / Modal shadow
     md: Platform.select({
       ios: {
-        shadowColor: theme.shadows.md?.shadowColor,
+        shadowColor: "#000000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 12,
