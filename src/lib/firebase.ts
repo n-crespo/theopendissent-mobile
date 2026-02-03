@@ -23,9 +23,7 @@ import {
   GoogleAuthProvider,
   getAuth,
   connectAuthEmulator,
-  // initializeAuth,
 } from "firebase/auth";
-// import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -46,10 +44,6 @@ export interface UserCounts {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-// const auth = initializeAuth(app, {
-//   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-// });
-// export const db = getDatabase(app);
 const db = getDatabase(app);
 
 export { auth, db };
@@ -558,11 +552,3 @@ export const subscribeToUserCounts = (
     interactionsUnsub();
   };
 };
-function getReactNativePersistence(
-  ReactNativeAsyncStorage: any,
-):
-  | import("@firebase/auth").Persistence
-  | import("@firebase/auth").Persistence[]
-  | undefined {
-  throw new Error("Function not implemented.");
-}
