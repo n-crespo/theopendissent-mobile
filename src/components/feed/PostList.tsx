@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { usePosts } from "../hooks/usePosts";
-import { useFeedSort } from "../context/FeedSortContext";
-import { getPostById } from "../lib/firebase";
-import { Post } from "../types";
+import { usePosts } from "../../hooks/usePosts";
+import { useFeedSort } from "../../context/FeedSortContext";
+import { getPostById } from "../../lib/firebase";
+import { Post } from "../../types";
 import { PostListView } from "./PostListView";
 
 export const PostList = () => {
