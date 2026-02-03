@@ -2,13 +2,15 @@ import React from "react";
 import {
   ActionSheetIOS,
   Platform,
-  Pressable,
   Alert,
+  Pressable,
   StyleSheet,
+  // View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Post } from "@/src/types";
 
+// Hooks
 import { useShare } from "../../hooks/useShare";
 import { useReport } from "../../hooks/useReport";
 
@@ -18,6 +20,8 @@ interface ActionMenuProps {
   currentUserId?: string;
   onEdit: () => void;
   onDelete: () => void;
+  // We expose the trigger function so the parent (PostItem) can call it on LongPress
+  triggerRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 export const ActionMenu = ({
@@ -26,6 +30,7 @@ export const ActionMenu = ({
   currentUserId,
   onEdit,
   onDelete,
+  triggerRef,
 }: ActionMenuProps) => {
   const { sharePost } = useShare();
   const { reportPost } = useReport();
@@ -38,19 +43,22 @@ export const ActionMenu = ({
     }
   };
 
-  // 1. iOS Native Action Sheet
+  // Assign this function to the ref so the parent can call it
+  if (triggerRef) {
+    triggerRef.current = handlePress;
+  }
+
   const showActionSheetIOS = () => {
     const options = ["Cancel", "Share"];
-    const destructiveButtonIndex = []; // Track which index is red
+    const destructiveButtonIndex = [];
 
-    // Build dynamic options
     if (isOwner) {
       options.push("Edit Post");
       options.push("Delete Post");
       destructiveButtonIndex.push(options.length - 1); // Delete is last
     } else if (currentUserId) {
       options.push("Report");
-      destructiveButtonIndex.push(options.length - 1); // Report is red
+      destructiveButtonIndex.push(options.length - 1);
     }
 
     ActionSheetIOS.showActionSheetWithOptions(
@@ -62,49 +70,40 @@ export const ActionMenu = ({
       },
       (buttonIndex) => {
         const selected = options[buttonIndex];
-
         switch (selected) {
           case "Share":
             sharePost(post);
             break;
           case "Edit Post":
-            // Slight delay ensures the action sheet closes smoothly before edit mode starts
             setTimeout(onEdit, 100);
             break;
           case "Delete Post":
             setTimeout(onDelete, 100);
             break;
           case "Report":
-            reportPost(post.id, currentUserId);
+            if (currentUserId) reportPost(post.id, currentUserId);
             break;
         }
       },
     );
   };
 
-  // 2. Android Fallback (Native Alert Menu)
   const showAndroidAlert = () => {
     const buttons: any[] = [
       { text: "Cancel", style: "cancel" },
       { text: "Share", onPress: () => sharePost(post) },
     ];
-
     if (isOwner) {
       buttons.push({ text: "Edit", onPress: onEdit });
-      buttons.push({
-        text: "Delete",
-        style: "destructive",
-        onPress: onDelete,
-      });
+      buttons.push({ text: "Delete", style: "destructive", onPress: onDelete });
     } else if (currentUserId) {
       buttons.push({
         text: "Report",
         style: "destructive",
-        onPress: () => reportPost(post.id, currentUserId),
+        onPress: () => reportPost(post.id, currentUserId!),
       });
     }
-
-    Alert.alert("Post Options", undefined, buttons);
+    Alert.alert("Options", undefined, buttons);
   };
 
   return (

@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 import { Post } from "@/src/types";
 import { timeAgo, formatCompactNumber } from "@/src/utils";
 import { theme } from "@/src/constants/theme";
-// Removed unused useAuth import
 import { usePostActions } from "@/src/hooks/usePostActions";
 import { ActionMenu } from "../layout/ActionMenu";
 
@@ -22,7 +21,6 @@ interface PostItemProps {
   onStanceChange?: (stance: "agreed" | "dissented" | null) => void;
 }
 
-// 1. Define component as a named function first (Fixes display-name error)
 const PostItemComponent = ({
   post,
   disableClick,
@@ -30,8 +28,9 @@ const PostItemComponent = ({
 }: PostItemProps) => {
   const router = useRouter();
 
-  // 2. Removed unused 'user' from useAuth.
-  // We use 'uid' from the hook instead.
+  // 1. Create a ref to store the menu trigger function
+  const menuTriggerRef = useRef<(() => void) | null>(null);
+
   const {
     uid,
     localMetrics,
@@ -68,16 +67,19 @@ const PostItemComponent = ({
 
   const onOpenReplies = () => {
     if (disableClick || isEditing) return;
+    router.push({ pathname: "/replies/[id]", params: { id: post.id } });
+  };
 
-    router.push({
-      pathname: "/replies/[id]",
-      params: { id: post.id },
-    });
+  // 2. The Long Press Handler
+  const handleLongPress = () => {
+    // Haptic feedback could be added here
+    if (menuTriggerRef.current) {
+      menuTriggerRef.current(); // Programmatically open the ActionSheet
+    }
   };
 
   const formattedTime =
     typeof post.timestamp === "number" ? timeAgo(new Date(post.timestamp)) : "";
-
   const formattedEditTime = post.editedAt
     ? timeAgo(new Date(post.editedAt))
     : null;
@@ -110,16 +112,18 @@ const PostItemComponent = ({
           </View>
         </View>
 
+        {/* 3. Pass the ref to ActionMenu */}
         <ActionMenu
           post={post}
           isOwner={isOwner}
           currentUserId={uid}
           onEdit={() => setIsEditing(true)}
           onDelete={handleDeleteTrigger}
+          triggerRef={menuTriggerRef}
         />
       </View>
 
-      {/* CONTENT (VIEW vs EDIT) */}
+      {/* CONTENT */}
       {isEditing ? (
         <View style={styles.editContainer}>
           <View style={styles.inputWrapper}>
@@ -140,7 +144,6 @@ const PostItemComponent = ({
               {charsLeft}
             </Text>
           </View>
-
           <View style={styles.editButtons}>
             <Pressable
               onPress={handleEditSave}
@@ -166,7 +169,17 @@ const PostItemComponent = ({
           </View>
         </View>
       ) : (
-        <Pressable onPress={onOpenReplies} disabled={disableClick}>
+        /* 4. Add onLongPress here! */
+        <Pressable
+          onPress={onOpenReplies}
+          onLongPress={handleLongPress}
+          delayLongPress={500}
+          disabled={disableClick}
+          // Optional: visual feedback when holding
+          style={({ pressed }) => [
+            pressed && !disableClick && { opacity: 0.7 },
+          ]}
+        >
           <Text style={styles.content}>{post.postContent}</Text>
         </Pressable>
       )}
@@ -250,7 +263,6 @@ const PostItemComponent = ({
   );
 };
 
-// 3. Export the Memoized component
 export const PostItem = memo(PostItemComponent);
 
 const styles = StyleSheet.create({
