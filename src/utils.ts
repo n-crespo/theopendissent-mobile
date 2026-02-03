@@ -31,47 +31,33 @@ export function timeAgo(date: Date, locale: string = "en"): string {
   const MONTH = DAY * 30;
   const YEAR = DAY * 365;
 
-  type RelativeTimeUnit =
-    | "second"
-    | "minute"
-    | "hour"
-    | "day"
-    | "month"
-    | "year";
-
-  let unit: RelativeTimeUnit;
-  let value: number;
-
-  // determine the largest relevant unit
   if (diffInSeconds < MINUTE) {
-    unit = "second";
-    value = diffInSeconds;
+    return "just now";
   } else if (diffInSeconds < HOUR) {
-    unit = "minute";
-    value = Math.floor(diffInSeconds / MINUTE);
+    const minutes = Math.floor(diffInSeconds / MINUTE);
+    return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
   } else if (diffInSeconds < DAY) {
-    unit = "hour";
-    value = Math.floor(diffInSeconds / HOUR);
+    const hours = Math.floor(diffInSeconds / HOUR);
+    return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
   } else if (diffInSeconds < MONTH) {
-    unit = "day";
-    value = Math.floor(diffInSeconds / DAY);
+    const days = Math.floor(diffInSeconds / DAY);
+    return `${days} day${days !== 1 ? "s" : ""} ago`;
   } else if (diffInSeconds < YEAR) {
-    unit = "month";
-    value = Math.floor(diffInSeconds / MONTH);
+    const months = Math.floor(diffInSeconds / MONTH);
+    return `${months} month${months !== 1 ? "s" : ""} ago`;
   } else {
-    unit = "year";
-    value = Math.floor(diffInSeconds / YEAR);
+    const years = Math.floor(diffInSeconds / YEAR);
+    return `${years} year${years !== 1 ? "s" : ""} ago`;
   }
-
-  // use Intl human-readable string
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
-
-  return rtf.format(0 - value, unit);
 }
 
 export const formatCompactNumber = (number: number) => {
-  return Intl.NumberFormat("en-US", {
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(number);
+  if (number < 1000) {
+    return number.toString();
+  } else if (number >= 1000 && number < 1000000) {
+    return (number / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+  } else if (number >= 1000000) {
+    return (number / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+  }
+  return number.toString();
 };
