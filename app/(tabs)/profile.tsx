@@ -11,10 +11,7 @@ export default function ProfileTab() {
       <View style={styles.center}>
         <Text style={styles.title}>Profile</Text>
         <Text>{user ? `Logged in as ${user.email}` : "Not logged in"}</Text>
-        <Button
-          title="Sign In"
-          onPress={() => router.push("../modal/signin")}
-        />
+        <Button title="Sign In" onPress={() => router.push("/modal/signin")} />
       </View>
     </SafeAreaView>
   );
