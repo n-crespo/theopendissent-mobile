@@ -13,9 +13,14 @@ export default function RootLayout() {
         <ModalProvider>
           <Stack screenOptions={{ headerShown: false }}>
             {/* 1. Main Tabs */}
-            <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                title: "Home Feed",
+              }}
+            />
 
-            {/* 2. Sign In Modal (Native Form Sheet) */}
+            {/* 2. Sign In Modal */}
             <Stack.Screen
               name="modal/signin"
               options={{
@@ -26,13 +31,17 @@ export default function RootLayout() {
               }}
             />
 
-            {/* 3. Discussion Sheet */}
+            {/* 3. Discussion Sheet - SIMPLIFIED */}
             <Stack.Screen
               name="discussion/[id]"
               options={{
-                presentation: "formSheet",
+                presentation: "modal",
                 sheetAllowedDetents: [1.0],
                 sheetGrabberVisible: true,
+                headerShown: true, // Native Header ON
+                title: "Replies",
+                headerShadowVisible: true,
+                headerStyle: { backgroundColor: "#F2F2F7" },
               }}
             />
           </Stack>

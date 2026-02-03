@@ -78,14 +78,6 @@ export default function DiscussionPage() {
 
   return (
     <View style={styles.container}>
-      {/* Native-style Header inside the sheet */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Discussion</Text>
-        <Pressable onPress={() => router.back()} style={styles.closeButton}>
-          <Ionicons name="close-circle" size={30} color="#E5E5EA" />
-        </Pressable>
-      </View>
-
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
