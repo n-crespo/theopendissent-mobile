@@ -3,12 +3,14 @@ import { StyleSheet, View, Text, Pressable, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import { theme } from "@/src/constants/theme";
+import { useModal } from "../../context/ModalContext";
 
 export const Header = () => {
+  const { openModal } = useModal();
   const { user, loading } = useAuth();
 
   const handleOpenAbout = () => {
-    alert("About Modal would open here");
+    openModal("about");
   };
 
   const handleSignIn = () => {
