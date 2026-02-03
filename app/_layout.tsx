@@ -33,7 +33,7 @@ export default function RootLayout() {
 
             {/* 3. Discussion Sheet - SIMPLIFIED */}
             <Stack.Screen
-              name="discussion/[id]"
+              name="replies/[id]"
               options={{
                 presentation: "modal",
                 sheetAllowedDetents: [1.0],

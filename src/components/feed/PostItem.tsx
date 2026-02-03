@@ -39,7 +39,7 @@ export const PostItem = ({ post, onStanceChange }: PostItemProps) => {
   };
 
   const onOpenDiscussion = () => {
-    router.push(`/discussion/${post.id}`);
+    router.push(`/replies/${post.id}`);
   };
 
   // Safe checks for counts
