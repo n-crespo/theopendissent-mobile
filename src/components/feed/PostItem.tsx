@@ -6,14 +6,18 @@ import { timeAgo, formatCompactNumber } from "@/src/utils";
 import { theme } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/AuthContext";
 
-export const PostItem = ({ post }: { post: Post }) => {
+interface PostItemProps {
+  post: Post;
+  onStanceChange?: (stance: "agreed" | "dissented") => void;
+}
+
+export const PostItem = ({ post, onStanceChange }: PostItemProps) => {
   const router = useRouter();
   const { user } = useAuth();
 
   if (!post) return null;
 
   // --- INTERACTION HANDLER ---
-  // Only used for actions that MODIFY data (Voting)
   const handleInteraction = (action: () => void) => {
     if (!user) {
       router.push("/profile");
@@ -26,6 +30,11 @@ export const PostItem = ({ post }: { post: Post }) => {
     handleInteraction(() => {
       // Placeholder for your actual voting logic
       console.log(`User voted: ${type}`);
+
+      // 2. Call the callback if it exists (Unlocks the input box)
+      if (onStanceChange) {
+        onStanceChange(type === "agree" ? "agreed" : "dissented");
+      }
     });
   };
 
@@ -114,7 +123,7 @@ export const PostItem = ({ post }: { post: Post }) => {
           </Pressable>
         </View>
 
-        {/* Reply Button - NOW OPENS DISCUSSION DIRECTLY */}
+        {/* Reply Button - OPENS DISCUSSION DIRECTLY */}
         <Pressable
           style={({ pressed }) => [
             styles.replyButton,
