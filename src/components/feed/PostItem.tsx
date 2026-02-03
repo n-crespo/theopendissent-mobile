@@ -1,11 +1,37 @@
 import { StyleSheet, Text, View, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { Post } from "@/src/types";
 import { timeAgo, formatCompactNumber } from "@/src/utils";
 import { theme } from "@/src/constants/theme";
+import { useAuth } from "@/src/context/AuthContext";
 
 export const PostItem = ({ post }: { post: Post }) => {
+  const router = useRouter();
+  const { user } = useAuth();
+
   if (!post) return null;
+
+  // --- INTERACTION HANDLER ---
+  // Only used for actions that MODIFY data (Voting)
+  const handleInteraction = (action: () => void) => {
+    if (!user) {
+      router.push("/profile");
+      return;
+    }
+    action();
+  };
+
+  const onVote = (type: "agree" | "disagree") => {
+    handleInteraction(() => {
+      // Placeholder for your actual voting logic
+      console.log(`User voted: ${type}`);
+    });
+  };
+
+  const onOpenDiscussion = () => {
+    router.push(`/discussion/${post.id}`);
+  };
 
   // Safe checks for counts
   const agreedCount = post.userInteractions?.agreed
@@ -42,14 +68,23 @@ export const PostItem = ({ post }: { post: Post }) => {
       </View>
 
       {/* --- CONTENT --- */}
-      <Text style={styles.content}>{post.postContent}</Text>
+      {/* Wrapped in Pressable so tapping text opens discussion */}
+      <Pressable onPress={onOpenDiscussion}>
+        <Text style={styles.content}>{post.postContent}</Text>
+      </Pressable>
 
       {/* --- FOOTER (ACTIONS) --- */}
       <View style={styles.footer}>
         {/* Vote Pills */}
         <View style={styles.pillContainer}>
           {/* Agreed Pill */}
-          <Pressable style={styles.pill}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.pill,
+              pressed && styles.pressedPill,
+            ]}
+            onPress={() => onVote("agree")}
+          >
             <View style={[styles.iconCircle, styles.bgGreen]}>
               <Ionicons
                 name="checkmark"
@@ -63,7 +98,13 @@ export const PostItem = ({ post }: { post: Post }) => {
           </Pressable>
 
           {/* Dissented Pill */}
-          <Pressable style={styles.pill}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.pill,
+              pressed && styles.pressedPill,
+            ]}
+            onPress={() => onVote("disagree")}
+          >
             <View style={[styles.iconCircle, styles.bgRed]}>
               <Ionicons name="close" size={10} color={theme.colors.surface} />
             </View>
@@ -73,8 +114,14 @@ export const PostItem = ({ post }: { post: Post }) => {
           </Pressable>
         </View>
 
-        {/* Reply Button */}
-        <Pressable style={styles.replyButton}>
+        {/* Reply Button - NOW OPENS DISCUSSION DIRECTLY */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.replyButton,
+            pressed && styles.pressedIcon,
+          ]}
+          onPress={onOpenDiscussion}
+        >
           <Ionicons
             name="chatbubble-outline"
             size={16}
@@ -107,7 +154,7 @@ const styles = StyleSheet.create({
   avatarContainer: {
     width: 32,
     height: 32,
-    backgroundColor: theme.colors.background, // Used as a subtle gray/offwhite
+    backgroundColor: theme.colors.background,
     borderRadius: theme.borderRadius.md,
     alignItems: "center",
     justifyContent: "center",
@@ -128,7 +175,7 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: theme.colors.border, // Using border color for the subtle dot
+    backgroundColor: theme.colors.border,
     marginHorizontal: 6,
   },
   timestamp: {
@@ -137,7 +184,7 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: 16,
-    color: theme.colors.text, // Using main text color
+    color: theme.colors.text,
     lineHeight: 24,
     marginBottom: 16,
   },
@@ -147,15 +194,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.background, // Using subtle background/border
+    borderTopColor: theme.colors.background,
   },
   pillContainer: {
     flexDirection: "row",
-    backgroundColor: theme.colors.surface,
+    backgroundColor: theme.colors.background,
     borderRadius: theme.borderRadius.full,
     padding: 3,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.background,
     gap: 2,
   },
   pill: {
@@ -165,6 +212,12 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: theme.borderRadius.lg,
     gap: 6,
+  },
+  pressedPill: {
+    backgroundColor: theme.colors.border,
+  },
+  pressedIcon: {
+    opacity: 0.6,
   },
   iconCircle: {
     width: 16,

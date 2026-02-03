@@ -1,4 +1,4 @@
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "../src/context/AuthContext";
@@ -8,17 +8,34 @@ import { GlobalModal } from "../src/components/modals/GlobalModal";
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
-      {/* style="dark" -> Forces the Time/Battery text to be BLACK.
-        This provides high contrast against your cream (#F8F2E8) background.
-      */}
       <StatusBar style="dark" />
-
       <AuthProvider>
         <ModalProvider>
-          {/* Slot loads the (tabs) layout automatically */}
-          <Slot />
+          <Stack screenOptions={{ headerShown: false }}>
+            {/* 1. Main Tabs */}
+            <Stack.Screen name="(tabs)" />
 
-          {/* Your Custom Global Modal floats above everything else */}
+            {/* 2. Sign In Modal (Native Form Sheet) */}
+            <Stack.Screen
+              name="modal/signin"
+              options={{
+                presentation: "formSheet", // The Apple Card Look
+                sheetAllowedDetents: [1.0],
+                sheetGrabberVisible: true,
+                headerShown: false, // We handle the header inside the file
+              }}
+            />
+
+            {/* 3. Discussion Sheet */}
+            <Stack.Screen
+              name="discussion/[id]"
+              options={{
+                presentation: "formSheet",
+                sheetAllowedDetents: [1.0],
+                sheetGrabberVisible: true,
+              }}
+            />
+          </Stack>
           <GlobalModal />
         </ModalProvider>
       </AuthProvider>
