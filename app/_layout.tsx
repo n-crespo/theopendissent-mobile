@@ -1,6 +1,6 @@
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import { Slot } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import { AuthProvider } from "../src/context/AuthContext";
 import { ModalProvider } from "../src/context/ModalContext";
 import { GlobalModal } from "../src/components/modals/GlobalModal";
@@ -8,28 +8,17 @@ import { GlobalModal } from "../src/components/modals/GlobalModal";
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
+      {/* style="dark" -> Forces the Time/Battery text to be BLACK.
+        This provides high contrast against your cream (#F8F2E8) background.
+      */}
       <StatusBar style="dark" />
+
       <AuthProvider>
         <ModalProvider>
-          {/* Use Stack for native navigation */}
-          <Stack>
-            {/* 1. Main Feed (Hidden Header) */}
-            <Stack.Screen name="index" options={{ headerShown: false }} />
+          {/* Slot loads the (tabs) layout automatically */}
+          <Slot />
 
-            {/* 2. The "Apple Style" About Sheet */}
-            <Stack.Screen
-              name="modal/about"
-              options={{
-                presentation: "modal", // Use native iOS sheet
-                headerShown: true, // Use native header bar
-                headerTitle: "About", // Native Title
-                headerLargeTitle: true, // The big iOS 14+ title
-                headerStyle: { backgroundColor: "#F2F2F7" }, // Matches grouped bg
-                headerShadowVisible: false, // Removes line under header
-              }}
-            />
-          </Stack>
-
+          {/* Your Custom Global Modal floats above everything else */}
           <GlobalModal />
         </ModalProvider>
       </AuthProvider>

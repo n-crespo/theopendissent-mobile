@@ -5,6 +5,7 @@ import {
   FlatList,
   ActivityIndicator,
   Text,
+  Image,
 } from "react-native";
 import { PostItem } from "./PostItem";
 import { Post } from "../../types";
@@ -24,14 +25,26 @@ export const PostListView = ({
   hasMore,
   onLoadMore,
 }: PostListViewProps) => {
-  // 1. Header Component: Renders the "Pinned" post at the top of the scrollable list
   const renderHeader = () => {
-    if (!highlightedPost) return null;
     return (
-      <View style={styles.pinnedContainer}>
-        <Text style={styles.pinnedLabel}>Shared Discussion</Text>
-        <PostItem post={highlightedPost} />
-        <View style={styles.divider} />
+      <View>
+        {/* --- NEW: The Logo lives here now --- */}
+        <View style={styles.logoContainer}>
+          <Image
+            source={require("../../../assets/images/Flat-Logo.png")}
+            style={styles.logo}
+            resizeMode="center"
+          />
+        </View>
+
+        {/* Pinned Post Logic */}
+        {highlightedPost && (
+          <View style={styles.pinnedContainer}>
+            <Text style={styles.pinnedLabel}>Shared Discussion</Text>
+            <PostItem post={highlightedPost} />
+            <View style={styles.divider} />
+          </View>
+        )}
       </View>
     );
   };
@@ -58,6 +71,7 @@ export const PostListView = ({
 
   return (
     <FlatList
+      // ... keep existing props ...
       data={posts}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => <PostItem post={item} />}
@@ -112,5 +126,13 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 12,
     color: "#94a3b8",
+  },
+  logoContainer: {
+    alignItems: "center",
+    paddingBottom: 16,
+    paddingTop: 40,
+  },
+  logo: {
+    height: 50,
   },
 });

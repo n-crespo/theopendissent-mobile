@@ -16,8 +16,7 @@
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/icon.jpg"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "output": "static",
