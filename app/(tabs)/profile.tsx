@@ -1,6 +1,7 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Button } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/context/AuthContext";
+import { router } from "expo-router";
 
 export default function ProfileTab() {
   const { user } = useAuth();
@@ -10,6 +11,10 @@ export default function ProfileTab() {
       <View style={styles.center}>
         <Text style={styles.title}>Profile</Text>
         <Text>{user ? `Logged in as ${user.email}` : "Not logged in"}</Text>
+        <Button
+          title="Sign In"
+          onPress={() => router.push("../modal/signin")}
+        />
       </View>
     </SafeAreaView>
   );
