@@ -1,4 +1,4 @@
-import React, { memo, useRef } from "react";
+import React, { memo } from "react";
 import {
   StyleSheet,
   Text,
@@ -13,7 +13,9 @@ import { Post } from "@/src/types";
 import { timeAgo, formatCompactNumber } from "@/src/utils";
 import { theme } from "@/src/constants/theme";
 import { usePostActions } from "@/src/hooks/usePostActions";
-import { ActionMenu } from "../layout/ActionMenu";
+import { useReport } from "@/src/hooks/useReport";
+import { useShare } from "@/src/hooks/useShare";
+import { useAuth } from "@/src/context/AuthContext";
 
 interface PostItemProps {
   post: Post;
@@ -27,9 +29,9 @@ const PostItemComponent = ({
   onStanceChange,
 }: PostItemProps) => {
   const router = useRouter();
-
-  // 1. Create a ref to store the menu trigger function
-  const menuTriggerRef = useRef<(() => void) | null>(null);
+  const { user } = useAuth();
+  const { reportPost } = useReport();
+  const { sharePost } = useShare();
 
   const {
     uid,
@@ -47,6 +49,7 @@ const PostItemComponent = ({
   } = usePostActions(post);
 
   const isOwner = uid === post.userId;
+  const isLoggedIn = !!user;
   const MAX_CHARS = 600;
   const charsLeft = MAX_CHARS - editContent.length;
   const isNearLimit = charsLeft < 50;
@@ -68,14 +71,6 @@ const PostItemComponent = ({
   const onOpenReplies = () => {
     if (disableClick || isEditing) return;
     router.push({ pathname: "/replies/[id]", params: { id: post.id } });
-  };
-
-  // 2. The Long Press Handler
-  const handleLongPress = () => {
-    // Haptic feedback could be added here
-    if (menuTriggerRef.current) {
-      menuTriggerRef.current(); // Programmatically open the ActionSheet
-    }
   };
 
   const formattedTime =
@@ -102,6 +97,7 @@ const PostItemComponent = ({
             <Text style={styles.userId}>
               {isOwner ? "You" : post.userId.substring(0, 10) + "..."}
             </Text>
+            {/* fixed: replaced div with View */}
             <View style={styles.metaRow}>
               <Text style={styles.timestamp}>{formattedTime}</Text>
               {formattedEditTime && (
@@ -116,15 +112,23 @@ const PostItemComponent = ({
           </View>
         </View>
 
-        {/* 3. Pass the ref to ActionMenu */}
-        <ActionMenu
-          post={post}
-          isOwner={isOwner}
-          currentUserId={uid}
-          onEdit={() => setIsEditing(true)}
-          onDelete={handleDeleteTrigger}
-          triggerRef={menuTriggerRef}
-        />
+        {isLoggedIn && (
+          <Pressable
+            onPress={() =>
+              isOwner ? setIsEditing(true) : reportPost(post.id, uid)
+            }
+            style={({ pressed }) => [
+              styles.headerIconBtn,
+              pressed && { opacity: 0.6 },
+            ]}
+          >
+            <Ionicons
+              name={isOwner ? "create-outline" : "flag-outline"}
+              size={20}
+              color={theme.colors.textTertiary}
+            />
+          </Pressable>
+        )}
       </View>
 
       {/* CONTENT */}
@@ -148,6 +152,7 @@ const PostItemComponent = ({
               {charsLeft}
             </Text>
           </View>
+          {/* fixed: replaced div with View */}
           <View style={styles.editButtons}>
             <Pressable
               onPress={handleEditSave}
@@ -173,13 +178,11 @@ const PostItemComponent = ({
           </View>
         </View>
       ) : (
-        /* 4. Add onLongPress here! */
         <Pressable
           onPress={onOpenReplies}
-          onLongPress={handleLongPress}
+          onLongPress={isOwner ? handleDeleteTrigger : undefined}
           delayLongPress={500}
           disabled={disableClick}
-          // Optional: visual feedback when holding
           style={({ pressed }) => [
             pressed && !disableClick && { opacity: 0.7 },
           ]}
@@ -190,85 +193,103 @@ const PostItemComponent = ({
 
       {/* FOOTER */}
       <View style={styles.footer}>
-        <View style={styles.voteCapsule}>
-          <Pressable
-            style={[
-              styles.voteBtn,
-              activeStance === "agreed" && styles.voteBtnAgreed,
-            ]}
-            onPress={() => onVote("agreed")}
-          >
-            <Ionicons
-              name="checkmark"
-              size={14}
-              color={
-                activeStance === "agreed" ? "white" : theme.colors.textTertiary
-              }
-            />
-            <Text
+        <View style={styles.footerLeft}>
+          <View style={styles.voteCapsule}>
+            <Pressable
               style={[
-                styles.voteText,
-                activeStance === "agreed"
-                  ? { color: "white" }
-                  : { color: theme.colors.textSecondary },
+                styles.voteBtn,
+                activeStance === "agreed" && styles.voteBtnAgreed,
               ]}
+              onPress={() => onVote("agreed")}
             >
-              {formatCompactNumber(localMetrics.agreedCount)}
-            </Text>
-          </Pressable>
+              <Ionicons
+                name="checkmark"
+                size={14}
+                color={
+                  activeStance === "agreed"
+                    ? "white"
+                    : theme.colors.textTertiary
+                }
+              />
+              <Text
+                style={[
+                  styles.voteText,
+                  activeStance === "agreed"
+                    ? { color: "white" }
+                    : { color: theme.colors.textSecondary },
+                ]}
+              >
+                {formatCompactNumber(localMetrics.agreedCount)}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              style={[
+                styles.voteBtn,
+                activeStance === "dissented" && styles.voteBtnDissented,
+              ]}
+              onPress={() => onVote("dissented")}
+            >
+              <Ionicons
+                name="close"
+                size={14}
+                color={
+                  activeStance === "dissented"
+                    ? "white"
+                    : theme.colors.textTertiary
+                }
+              />
+              <Text
+                style={[
+                  styles.voteText,
+                  activeStance === "dissented"
+                    ? { color: "white" }
+                    : { color: theme.colors.textSecondary },
+                ]}
+              >
+                {formatCompactNumber(localMetrics.dissentedCount)}
+              </Text>
+            </Pressable>
+          </View>
 
           <Pressable
-            style={[
-              styles.voteBtn,
-              activeStance === "dissented" && styles.voteBtnDissented,
+            style={({ pressed }) => [
+              styles.replyButton,
+              pressed && { opacity: 0.6 },
             ]}
-            onPress={() => onVote("dissented")}
+            onPress={onOpenReplies}
+            disabled={disableClick}
           >
             <Ionicons
-              name="close"
-              size={14}
+              name={disableClick ? "chatbox" : "chatbox-outline"}
+              size={16}
               color={
-                activeStance === "dissented"
-                  ? "white"
-                  : theme.colors.textTertiary
+                disableClick ? theme.colors.logoBlue : theme.colors.textTertiary
               }
             />
             <Text
               style={[
-                styles.voteText,
-                activeStance === "dissented"
-                  ? { color: "white" }
-                  : { color: theme.colors.textSecondary },
+                styles.replyText,
+                disableClick && { color: theme.colors.logoBlue },
               ]}
             >
-              {formatCompactNumber(localMetrics.dissentedCount)}
+              {formatCompactNumber(localMetrics.replyCount)}
             </Text>
           </Pressable>
         </View>
 
         <Pressable
+          onPress={() => sharePost(post)}
           style={({ pressed }) => [
-            styles.replyButton,
+            styles.shareBtn,
             pressed && { opacity: 0.6 },
           ]}
-          onPress={onOpenReplies}
-          disabled={disableClick}
         >
           <Ionicons
-            name={disableClick ? "chatbox" : "chatbox-outline"}
-            size={16}
-            color={
-              disableClick ? theme.colors.logoBlue : theme.colors.textTertiary
-            }
+            name="share-outline"
+            size={20}
+            color={theme.colors.textTertiary}
           />
-          <Text
-            style={[
-              styles.replyText,
-              disableClick && { color: theme.colors.logoBlue },
-            ]}
-          >
-            {formatCompactNumber(localMetrics.replyCount)}
-          </Text>
         </Pressable>
       </View>
     </View>
@@ -305,6 +326,9 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: "row",
     gap: 10,
+  },
+  headerIconBtn: {
+    padding: 4,
   },
   avatarContainer: {
     width: 36,
@@ -405,6 +429,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.borderSubtle,
   },
+  footerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   voteCapsule: {
     flexDirection: "row",
     backgroundColor: theme.colors.slate50,
@@ -442,5 +471,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "700",
     color: theme.colors.textTertiary,
+  },
+  shareBtn: {
+    padding: 8,
   },
 });
