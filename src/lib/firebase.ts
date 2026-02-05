@@ -17,13 +17,19 @@ import {
 } from "firebase/database";
 import {
   onAuthStateChanged,
-  signInWithPopup,
   signOut,
   User,
   GoogleAuthProvider,
+  signInWithCredential,
   getAuth,
   connectAuthEmulator,
 } from "firebase/auth";
+
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+
+// required for the browser to close after login
+WebBrowser.maybeCompleteAuthSession();
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -340,17 +346,11 @@ export const subscribeToAuth = (callback: (user: User | null) => void) => {
 };
 
 /**
- * handles google sign-in with ucla-only email restriction logic.
+ * login for mobile
  */
-export const signInWithGoogle = async () => {
-  try {
-    // TODO: change this so it works on mobile
-    await signInWithPopup(auth, googleProvider);
-  } catch (error: any) {
-    // sign user out locally to clear partially authenticated state
-    await auth.signOut();
-    throw error;
-  }
+export const loginWithFirebaseCredential = async (idToken: string) => {
+  const credential = GoogleAuthProvider.credential(idToken);
+  return signInWithCredential(auth, credential);
 };
 
 /**

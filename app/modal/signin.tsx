@@ -7,37 +7,49 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { router, Stack } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/AuthContext";
+import { loginWithFirebaseCredential } from "@/src/lib/firebase";
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
 
 const IOS_BLUE = "#007AFF";
 
 export default function SignInModal() {
-  const { signIn } = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const handleSignIn = async () => {
+  // 1. Configure the Google Request
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    iosClientId: "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
+    androidClientId: "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
+    webClientId: "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com", // also called 'clientId' in some configs
+  });
+
+  // 2. Listen for the response
+  useEffect(() => {
+    if (response?.type === "success") {
+      const { id_token } = response.params;
+      handleFirebaseLogin(id_token);
+    }
+  }, [response]);
+
+  const handleFirebaseLogin = async (idToken: string) => {
     setLoading(true);
     try {
-      await signIn();
+      await loginWithFirebaseCredential(idToken);
       router.back();
     } catch (error: any) {
-      console.error("sign in error:", error.code, error.message);
-
-      // if the backend blocking function triggers, the message
-      // typically flows through the error object.
-      const isDomainError =
-        error.message?.includes("g.ucla.edu") ||
-        error.code === "auth/permission-denied";
-
+      // your backend blocking function error will be caught here
+      const isDomainError = error.message?.includes("g.ucla.edu");
       Alert.alert(
-        isDomainError ? "UCLA Access Only" : "Sign In Error",
+        isDomainError ? "UCLA Access Only" : "Login Failed",
         isDomainError
-          ? "Please use your official @g.ucla.edu student email to continue."
-          : "An unexpected error occurred. Please try again.",
+          ? "Please use your @g.ucla.edu email."
+          : "Try again later.",
       );
     } finally {
       setLoading(false);
@@ -82,9 +94,13 @@ export default function SignInModal() {
         </View>
 
         <Pressable
-          style={[styles.primaryButton, loading && { opacity: 0.7 }]}
-          onPress={handleSignIn}
-          disabled={loading}
+          style={({ pressed }) => [
+            styles.primaryButton,
+            (!request || loading) && { opacity: 0.5 },
+            pressed && { opacity: 0.8 },
+          ]}
+          disabled={!request || loading}
+          onPress={() => promptAsync()}
         >
           {loading ? (
             <ActivityIndicator color="white" />
