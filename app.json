@@ -2,6 +2,7 @@
   "expo": {
     "name": "theopendissent-mobile",
     "slug": "theopendissent-mobile",
+    "owner": "ncrespo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.jpg",
@@ -10,7 +11,16 @@
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "com.nick.theopendissent",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.447499648500-itohi2hq3p1ha7326pu0vk0nk2mqh3qp"
+            ]
+          }
+        ]
+      }
     },
     "android": {
       "package": "com.nick.theopendissent",
@@ -43,6 +53,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "650cb907-b0d9-4065-a34d-6c468dd6129f"
+      }
     }
   }
 }
