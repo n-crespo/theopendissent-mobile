@@ -13,23 +13,15 @@ import {
   query,
   orderByChild,
   limitToLast,
-  connectDatabaseEmulator,
 } from "firebase/database";
 import {
   onAuthStateChanged,
+  signInWithPopup,
   signOut,
   User,
   GoogleAuthProvider,
-  signInWithCredential,
   getAuth,
-  connectAuthEmulator,
 } from "firebase/auth";
-
-import * as Google from "expo-auth-session/providers/google";
-import * as WebBrowser from "expo-web-browser";
-
-// required for the browser to close after login
-WebBrowser.maybeCompleteAuthSession();
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -49,16 +41,8 @@ export interface UserCounts {
 }
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
-
-export { auth, db };
-
-if (process.env.DEV) {
-  connectAuthEmulator(auth, "http://127.0.0.1:9099");
-  connectDatabaseEmulator(db, "127.0.0.1", 9000);
-  console.log("connected to firebase emulators");
-}
+export const auth = getAuth(app);
+export const db = getDatabase(app);
 
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
@@ -346,11 +330,16 @@ export const subscribeToAuth = (callback: (user: User | null) => void) => {
 };
 
 /**
- * login for mobile
+ * handles google sign-in with ucla-only email restriction logic.
  */
-export const loginWithFirebaseCredential = async (idToken: string) => {
-  const credential = GoogleAuthProvider.credential(idToken);
-  return signInWithCredential(auth, credential);
+export const signInWithGoogle = async () => {
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch (error: any) {
+    // sign user out locally to clear partially authenticated state
+    await auth.signOut();
+    throw error;
+  }
 };
 
 /**
