@@ -97,7 +97,6 @@ const PostItemComponent = ({
             <Text style={styles.userId}>
               {isOwner ? "You" : post.userId.substring(0, 10) + "..."}
             </Text>
-            {/* fixed: replaced div with View */}
             <View style={styles.metaRow}>
               <Text style={styles.timestamp}>{formattedTime}</Text>
               {formattedEditTime && (
@@ -152,7 +151,6 @@ const PostItemComponent = ({
               {charsLeft}
             </Text>
           </View>
-          {/* fixed: replaced div with View */}
           <View style={styles.editButtons}>
             <Pressable
               onPress={handleEditSave}
