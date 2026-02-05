@@ -1,6 +1,7 @@
-import { Post } from "../types/index.ts";
+import { Post } from "../types";
 
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApp, getApps } from "firebase/app";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   getDatabase,
   ref,
@@ -16,11 +17,13 @@ import {
 } from "firebase/database";
 import {
   onAuthStateChanged,
-  signInWithPopup,
   signOut,
   User,
   GoogleAuthProvider,
-  getAuth,
+  signInWithCredential,
+  initializeAuth,
+  getReactNativePersistence,
+  Auth,
 } from "firebase/auth";
 
 const firebaseConfig = {
@@ -40,17 +43,46 @@ export interface UserCounts {
   dissented: number;
 }
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// --- Initialization ---
+// Prevent duplicate app initialization in Expo hot-reload
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const db = getDatabase(app);
-
-export const googleProvider = new GoogleAuthProvider();
-googleProvider.setCustomParameters({
-  login_hint: "user@g.ucla.edu",
-  prompt: "select_account",
+export const auth: Auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
 });
 
 export const postsRef = ref(db, "posts");
+
+// --- Auth Functions ---
+
+/**
+ * Signs in using a Google ID Token obtained from expo-auth-session.
+ * NOTE: The UI component must handle the promptAsync() call.
+ */
+export const signInWithGoogle = async (idToken: string) => {
+  try {
+    const credential = GoogleAuthProvider.credential(idToken);
+    await signInWithCredential(auth, credential);
+  } catch (error: any) {
+    console.error("Firebase sign-in error:", error);
+    await signOut(auth); // Clear state if sign-in fails half-way
+    throw error;
+  }
+};
+
+/**
+ * subscribes to auth state changes.
+ */
+export const subscribeToAuth = (callback: (user: User | null) => void) => {
+  return onAuthStateChanged(auth, callback);
+};
+
+/**
+ * signs the current user out.
+ */
+export const logoutUser = () => signOut(auth);
+
+// --- Database Functions ---
 
 /**
  * atomic update to add or remove an interaction in the user's tree.
@@ -323,52 +355,6 @@ export const subscribeToFeed = (
 };
 
 /**
- * subscribes to auth state changes.
- */
-export const subscribeToAuth = (callback: (user: User | null) => void) => {
-  return onAuthStateChanged(auth, callback);
-};
-
-/**
- * handles google sign-in with ucla-only email restriction logic.
- */
-export const signInWithGoogle = async () => {
-  try {
-    await signInWithPopup(auth, googleProvider);
-  } catch (error: any) {
-    // sign user out locally to clear partially authenticated state
-    await auth.signOut();
-    throw error;
-  }
-};
-
-/**
- * signs the current user out.
- */
-export const logoutUser = () => signOut(auth);
-
-/**
- * fetches data required for deep-linking based on post and parent ids.
- */
-export const getDeepLinkData = async (
-  sharedId: string,
-  parentId?: string | null,
-) => {
-  // if p exists, we are looking for a reply. if not, a top-level post.
-  const targetPost = await getPostById(sharedId, parentId || undefined);
-  if (!targetPost) return null;
-
-  if (parentId) {
-    const parent = await getPostById(parentId);
-    if (parent) {
-      return { displayPost: parent, highlightReplyId: sharedId };
-    }
-  }
-
-  return { displayPost: targetPost, highlightReplyId: null };
-};
-
-/**
  * Fetches lists of content based on user profile filters.
  * Handles the "Fan-out" reading:
  * 1. Get list of IDs from users/{uid}
@@ -411,8 +397,6 @@ export const getUserActivity = async (
 
             // Fetch parent for context
             const parent = await getPostById(parentId);
-            // Attach parent to the reply object
-            // We cast as any or extend the type locally in the component
             return { ...reply, parentPost: parent || undefined };
           };
           promises.push(fetchWithParent());
