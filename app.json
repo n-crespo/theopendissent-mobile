@@ -10,7 +10,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "bundleIdentifier": "com.nick.theopendissent",
+      "bundleIdentifier": "com.theopendissent.app",
       "supportsTablet": true,
       "infoPlist": {
         "CFBundleURLTypes": [
@@ -21,14 +21,6 @@
           }
         ]
       }
-    },
-    "android": {
-      "package": "com.nick.theopendissent",
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/icon.jpg"
-      },
-      "edgeToEdgeEnabled": true
     },
     "web": {
       "output": "static",
