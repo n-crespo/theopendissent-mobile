@@ -11,45 +11,74 @@ import { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "@/src/constants/theme";
-import { useAuth } from "@/src/context/AuthContext";
-import { loginWithFirebaseCredential } from "@/src/lib/firebase";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
+import { signInWithGoogle } from "@/src/lib/firebase";
+
+// Required for the browser to close correctly after login
+WebBrowser.maybeCompleteAuthSession();
 
 const IOS_BLUE = "#007AFF";
 
 export default function SignInModal() {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  // 1. Configure the Google Request
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId: "YOUR_IOS_CLIENT_ID.apps.googleusercontent.com",
-    androidClientId: "YOUR_ANDROID_CLIENT_ID.apps.googleusercontent.com",
-    webClientId: "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com", // also called 'clientId' in some configs
+  // 1. The Magic String: Matches your Google Cloud Console "Authorized redirect URIs"
+  const PROXY_REDIRECT = "https://auth.expo.io/@ncrespo/theopendissent-mobile";
+
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    // 2. CRITICAL: Use the Web Client ID for EVERYTHING in Expo Go.
+    // This forces Google to see this as a "Web" request, allowing the proxy redirect.
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+
+    // 3. Do NOT include iosClientId here while testing in Expo Go.
+    // It causes a mismatch because Google expects a Bundle ID (com.app...) instead of the proxy URL.
+
+    redirectUri: PROXY_REDIRECT,
+
+    // 4. Force Firebase-compatible response
+    responseType: "id_token",
   });
 
-  // 2. Listen for the response
+  // Debugging Log
+  useEffect(() => {
+    if (request) {
+      console.log("---------------------------------------------");
+      console.log("AUTH REQUEST READY");
+      console.log("Target Client ID:", request.clientId);
+      console.log("Redirect URI:", request.redirectUri);
+      console.log("---------------------------------------------");
+    }
+  }, [request]);
+
+  // Handle Login Response
   useEffect(() => {
     if (response?.type === "success") {
       const { id_token } = response.params;
       handleFirebaseLogin(id_token);
+    } else if (response?.type === "error") {
+      Alert.alert("Authentication Error", "Google could not sign you in.");
+      console.error("Auth Error:", response.error);
     }
   }, [response]);
 
   const handleFirebaseLogin = async (idToken: string) => {
+    if (!idToken) return;
+
     setLoading(true);
     try {
-      await loginWithFirebaseCredential(idToken);
+      // Pass the token to your firebase.ts helper
+      await signInWithGoogle(idToken);
       router.back();
     } catch (error: any) {
-      // your backend blocking function error will be caught here
+      console.error("Firebase Login Error:", error);
+
       const isDomainError = error.message?.includes("g.ucla.edu");
       Alert.alert(
         isDomainError ? "UCLA Access Only" : "Login Failed",
         isDomainError
           ? "Please use your @g.ucla.edu email."
-          : "Try again later.",
+          : "Could not verify your account with Firebase.",
       );
     } finally {
       setLoading(false);
@@ -100,7 +129,10 @@ export default function SignInModal() {
             pressed && { opacity: 0.8 },
           ]}
           disabled={!request || loading}
-          onPress={() => promptAsync()}
+          onPress={() => {
+            // Force the proxy usage one last time in the prompt
+            promptAsync();
+          }}
         >
           {loading ? (
             <ActivityIndicator color="white" />
